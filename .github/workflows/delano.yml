@@ -1,0 +1,38 @@
+name: Delano restock watch
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          pip install playwright requests
+          python -m playwright install --with-deps chromium
+
+      - name: Load last state
+        uses: actions/cache/restore@v4
+        with:
+          path: delano_state.json
+          key: delano-state-${{ github.run_id }}
+          restore-keys: delano-state-
+
+      - name: Check stock
+        run: python delano_watch.py
+
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: delano_state.json
+          key: delano-state-${{ github.run_id }}
