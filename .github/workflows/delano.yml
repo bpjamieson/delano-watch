@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
+    inputs:
+      test:
+        description: "Send a test push to my phone"
+        type: boolean
+        default: false
 
 jobs:
   check:
@@ -28,7 +33,7 @@ jobs:
           restore-keys: delano-state-
 
       - name: Check stock
-        run: python delano_watch.py
+        run: python delano_watch.py ${{ inputs.test && '--test' || '' }}
 
       - name: Save state
         if: always()
